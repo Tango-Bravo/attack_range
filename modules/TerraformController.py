@@ -132,6 +132,8 @@ class TerraformController(IEnvironmentController):
         target_public_ip = aws_service.get_single_instance_public_ip(
             target, self.config)
 
+        start_time = time.time()
+
         # check if specific atomics are used then it's not allowed to multiple techniques
         techniques_arr = simulation_techniques.split(',')
         if (len(techniques_arr) > 1) and (simulation_atomics != 'no'):
@@ -161,6 +163,8 @@ class TerraformController(IEnvironmentController):
         if runner.status == "successful":
             self.log.info("successfully executed technique ID {0} against target: {1}".format(
                 simulation_techniques, target))
+            with open("/tmp/attack-range-%s-last-sim.tmp" % self.config['range_name']) as last_sim:
+                last_sim.write("%s" % start_time)
         else:
             self.log.error("failed to executed technique ID {0} against target: {1}".format(
                 simulation_techniques, target))
