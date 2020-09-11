@@ -27,6 +27,8 @@ def main(args):
                         help="specify dedicated Atomic Red Team atomics to simulate in the attack_range, example: Regsvr32 remote COM scriptlet execution for T1117")
     parser.add_argument("-dn", "--dump_name", required=False,
                         help="name for the dumped attack data")
+    parser.add_argument("--last-sim", required=False, action='store_true',
+                        help="overrides dumps.yml time and dumps from the start of previous simulation")
     parser.add_argument("-c", "--config", required=False, default="attack_range.conf",
                         help="path to the configuration file of the attack range")
     parser.add_argument("-tf", "--test_file", required=False,
@@ -47,6 +49,7 @@ def main(args):
     list_machines = args.list_machines
     test_file = args.test_file
     dump_name = args.dump_name
+    last_sim = args.last_sim
 
     print("""
 starting program loaded for B1 battle droid
@@ -139,7 +142,7 @@ starting program loaded for B1 battle droid
         return controller.test(test_file)
 
     if action == 'dump':
-        controller.dump_attack_data(dump_name)
+        controller.dump_attack_data(dump_name, last_sim)
 
 
 if __name__ == "__main__":

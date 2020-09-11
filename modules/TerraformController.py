@@ -163,7 +163,7 @@ class TerraformController(IEnvironmentController):
         if runner.status == "successful":
             self.log.info("successfully executed technique ID {0} against target: {1}".format(
                 simulation_techniques, target))
-            with open("/tmp/attack-range-%s-last-sim.tmp" % self.config['range_name']) as last_sim:
+            with open("/tmp/attack-range-%s-last-sim.tmp" % self.config['range_name'], 'w') as last_sim:
                 last_sim.write("%s" % start_time)
         else:
             self.log.error("failed to executed technique ID {0} against target: {1}".format(
@@ -194,7 +194,7 @@ class TerraformController(IEnvironmentController):
             print("ERROR: Can't find configured EC2 Attack Range Instances in AWS.")
         print()
 
-    def dump_attack_data(self, dump_name):
+    def dump_attack_data(self, dump_name, last_sim):
 
         # copy json from nxlog
         # copy raw data using powershell
@@ -230,6 +230,12 @@ class TerraformController(IEnvironmentController):
                     for dump in yaml.full_load(dumps):
                         if dump['enabled']:
                             dump_out = dump['out']
+                            if last_sim:
+                                # if last_sim is set, then it overrides time in dumps.yml
+                                # and starts dumping from last simulation
+                                with open("/tmp/attack-range-%s-last-sim.tmp" % self.config['range_name'], 'r') as ls:
+                                    sim_ts = float(ls.readline())
+                                    dump['time'] = "-%ds" % int(time.time() - sim_ts)
                             dump_search = "search %s earliest=%s" % (dump['search'], dump['time'])
                             dump_info = "Dumping Splunk Search to %s " % dump_out
                             self.log.info(dump_info)
